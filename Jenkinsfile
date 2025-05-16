@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SNYK_TOKEN = credentials('snyk-token') // You will add this in Jenkins credentials
+        SNYK_TOKEN = credentials('snyk-token') 
     }
 
     stages {
@@ -20,7 +20,7 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh 'npm test || true' // Allows the pipeline to continue even if tests fail
+                sh 'npm test || true' 
             }
         }
 
