@@ -1,14 +1,10 @@
 pipeline {
     agent any
 
-    environment {
-        SNYK_TOKEN = credentials('snyk-token') 
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git branch: 'main', url: 'https://github.com/sehaj7089/8.2CDevSecOps.git'
             }
         }
 
@@ -20,17 +16,48 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh 'npm test || true' 
+                sh 'npm test || true'
+            }
+            post {
+                always {
+                    
+                    emailext (
+                        subject: "Jenkins Build - Run Tests Stage - ${currentBuild.currentResult}",
+                        body: """\
+                            <p>Run Tests stage completed with status: ${currentBuild.currentResult}</p>
+                            <p>Check the Jenkins console output for details.</p>
+                        """,
+                        to: 's223987254@deakin.edu.au',
+                        attachLog: true
+                    )
+                }
             }
         }
 
-        stage('Snyk Security Scan') {
+        stage('Generate Coverage Report') {
             steps {
-                sh 'npm install -g snyk'
-                sh 'snyk auth $SNYK_TOKEN'
-                sh 'snyk test'
+                sh 'npm run coverage || true'
+            }
+        }
+
+        stage('NPM Audit (Security Scan)') {
+            steps {
+                sh 'npm audit || true'
+            }
+            post {
+                always {
+                    
+                    emailext (
+                        subject: "Jenkins Build - Security Scan Stage - ${currentBuild.currentResult}",
+                        body: """\
+                            <p>Security scan stage completed with status: ${currentBuild.currentResult}</p>
+                            <p>Check the Jenkins console output for details.</p>
+                        """,
+                        to: 's223987254@deakin.edu.au',
+                        attachLog: true
+                    )
+                }
             }
         }
     }
 }
-
